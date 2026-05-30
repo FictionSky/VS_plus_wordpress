@@ -1,7 +1,16 @@
 .git/**
+.gitignore
+.worktrees/**
 .codegraph/**
 .vscode/**
+.vscodeignore
+docs/**
 tests/**
+artifacts/**
+.npm-cache/**
+scripts/install-vsix.cjs
+scripts/package-vsix.cjs
+scripts/vsix-artifact.cjs
 debug.log
 fictionsky-writing-guide-published.md
 vscode-wordpress-test.md

@@ -1,4 +1,6 @@
 debug.log
 *.vsix
+!artifacts/*.vsix
 node_modules/
 .worktrees/
+.npm-cache/

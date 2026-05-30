@@ -3,9 +3,26 @@
   "displayName": "WordPress Publisher",
   "description": "Publish the current Markdown document to WordPress from VS Code.",
   "version": "1.0.0",
-  "private": true,
+  "publisher": "fictionsky",
+  "license": "MIT",
   "type": "module",
   "main": "./extension/extension.cjs",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FictionSky/VS_plus_wordpress.git"
+  },
+  "homepage": "https://github.com/FictionSky/VS_plus_wordpress",
+  "bugs": {
+    "url": "https://github.com/FictionSky/VS_plus_wordpress/issues"
+  },
+  "keywords": [
+    "wordpress",
+    "vscode",
+    "markdown",
+    "publisher",
+    "blog"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -118,6 +135,11 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "publish:wp": "node scripts/publish-wp-blocks.mjs"
+    "publish:wp": "node scripts/publish-wp-blocks.mjs",
+    "package:vsix": "node scripts/package-vsix.cjs",
+    "install:vsix": "node scripts/install-vsix.cjs"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.6.2"
   }
 }

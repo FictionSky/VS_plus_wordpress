@@ -1,34 +1,47 @@
 # WordPress Publisher
 
-这是一个 VS Code 扩展项目，用来把当前打开的 Markdown 文件直接发布到 WordPress。
+Publish the current Markdown document to WordPress from VS Code.
 
-它支持：
+在 VS Code 中直接把当前 Markdown 文档发布到 WordPress。
 
-- 将当前 Markdown 文件发布为草稿
-- 将当前 Markdown 文件直接发布
-- 在 VS Code 设置中配置一个或多个 WordPress 站点
-- 使用 VS Code Secret Storage 保存 WordPress 应用密码
-- 复用当前项目里的 Markdown 到 WordPress 区块转换逻辑
+## 中文说明
 
-## 1. 扩展能做什么
+### 功能概览
 
-当前扩展提供 4 个命令：
+- 将当前 Markdown 文档发布为 WordPress 草稿
+- 将当前 Markdown 文档直接发布为已发布状态
+- 支持在 VS Code 设置中配置多个 WordPress 站点
+- 使用 VS Code Secret Storage 保存每个站点的应用密码
+- 复用仓库里的 Markdown 转 WordPress 区块逻辑
+- 兼容旧版 `wordpress-post.*` 设置
+
+### 可用命令
 
 - `WordPress: Publish Current Markdown as Draft`
 - `WordPress: Publish Current Markdown Now`
 - `WordPress: Save Site App Password`
 - `WordPress: Clear Saved Site App Password`
 
-其中：
+### 安装
 
-- `Publish Current Markdown as Draft` 用于先发布草稿，适合先检查排版
-- `Publish Current Markdown Now` 用于直接发布
-- `Save Site App Password` 用于保存 WordPress 应用密码
-- `Clear Saved Site App Password` 用于删除已经保存的密码
+#### 方式 1：本地打包为 VSIX
 
-## 2. VS Code 配置
+```powershell
+cmd /c npm install
+cmd /c npm run package:vsix
+cmd /c npm run install:vsix
+```
 
-推荐在 VS Code 用户 `settings.json` 中配置站点：
+#### 方式 2：开发模式运行
+
+1. 用 VS Code 打开当前项目目录。
+2. 按 `F5` 启动 `Extension Development Host`。
+3. 在新窗口里打开 Markdown 文件。
+4. 通过命令面板运行 `WordPress:` 开头的命令。
+
+### 配置
+
+推荐在 VS Code 的 `settings.json` 中配置站点：
 
 ```json
 {
@@ -48,19 +61,15 @@
 
 字段说明：
 
-- `id`：站点唯一标识，会在 frontmatter 里使用
-- `label`：命令选择站点时显示的名称
-- `baseUrl`：站点首页地址
-- `apiUrl`：WordPress REST API 地址，通常是 `https://你的站点/wp-json/wp/v2`
+- `id`：站点唯一标识
+- `label`：站点显示名称
+- `baseUrl`：站点首页地址，可选
+- `apiUrl`：WordPress REST API 地址，通常以 `/wp-json/wp/v2` 结尾
 - `username`：WordPress 用户名
-- `defaultSiteId`：当前文章没有指定站点时默认使用哪个站点
-- `frontmatterSiteKey`：frontmatter 中用于选择站点的字段名
+- `defaultSiteId`：Markdown 未指定站点时使用的默认站点
+- `frontmatterSiteKey`：frontmatter 中用于选站的字段名
 
-密码不会写进 `settings.json`，而是保存在 VS Code Secret Storage 中。
-
-### 兼容旧配置
-
-如果你以前已经在 VS Code 中配置过旧版字段：
+旧版配置仍然可用：
 
 ```json
 {
@@ -71,185 +80,252 @@
 }
 ```
 
-扩展目前仍然兼容这套旧配置，可以直接使用。
+### Markdown 要求
 
-## 3. Markdown 文件怎么写
-
-Markdown 文件顶部至少要有 frontmatter：
+Markdown 文件顶部至少应包含：
 
 ```yaml
 ---
-title: 文章标题
+title: Article Title
 slug: article-slug
 status: draft
 wordpress_site: main
 ---
 ```
 
-常用可选字段：
+常见可选字段：
 
 - `excerpt`
 - `categories`
 - `tags`
 
-注意：
+说明：
 
-- `categories` 和 `tags` 最稳妥的写法是使用 WordPress 后台已有的 slug
-- 如果你只配置了旧版 `wordpress-post.*`，可以不写 `wordpress_site`
+- `title` 和 `slug` 是必填项
+- `status` 可选值包括 `draft`、`publish`、`pending`、`private`、`future`
+- `categories` 与 `tags` 建议使用 WordPress 中已经存在的 slug
+- frontmatter 选站字段除了 `wordpress_site` 之外，也兼容 `wordpress_target`、`wp_site`、`site`
 
-测试文件已经提供在：
+### 使用流程
+
+1. 打开一个 Markdown 文件。
+2. 先执行 `WordPress: Save Site App Password` 保存应用密码。
+3. 执行 `WordPress: Publish Current Markdown as Draft` 或 `WordPress: Publish Current Markdown Now`。
+4. 扩展会根据 frontmatter、默认站点或站点选择器决定目标站点。
+
+仓库中附带了一个示例文件：
 
 - [wordpress-extension-test.md](./wordpress-extension-test.md)
 
-## 4. 如何在 VS Code 里验证扩展可用
+### 开发与测试
 
-### 方法一：开发模式验证
+```powershell
+cmd /c npm test
+```
 
-这是当前最直接的验证方式。
-
-1. 用 VS Code 打开当前项目文件夹
-2. 按 `F5`
-3. VS Code 会打开一个新的 `Extension Development Host` 窗口
-4. 在新窗口里打开 Markdown 文件
-5. 按 `Ctrl+Shift+P`
-6. 搜索 `WordPress:`
-7. 执行下面命令之一：
-
-- `WordPress: Save Site App Password`
-- `WordPress: Publish Current Markdown as Draft`
-- `WordPress: Publish Current Markdown Now`
-
-推荐第一次先这样验证：
-
-1. 打开 [wordpress-extension-test.md](./wordpress-extension-test.md)
-2. 先执行 `WordPress: Save Site App Password`
-3. 再执行 `WordPress: Publish Current Markdown as Draft`
-
-### 方法二：命令行脚本验证
-
-原来的 CLI 入口仍然可用：
+如果你只想直接调用共享 CLI：
 
 ```powershell
 node .\scripts\publish-wp-blocks.mjs .\wordpress-extension-test.md
 ```
 
-它现在和扩展共用同一套发布核心逻辑。
+CLI 优先读取以下环境变量：
 
-## 5. 怎么把扩展安装到 VS Code
+- `WP_BASE_URL`
+- `WP_API_URL`
+- `WP_USER`
+- `WP_APP_PASSWORD`
 
-当前有两种方式。
+如果环境变量缺失，CLI 会尝试从本机 VS Code `settings.json` 中读取旧版 `wordpress-post.*` 设置。
 
-### 方式一：直接以开发扩展方式使用
-
-如果只是你自己本地使用，最简单的方法就是：
-
-1. 保留这个项目目录
-2. 在 VS Code 中打开它
-3. 每次按 `F5` 启动扩展开发宿主窗口
-
-这种方式不需要打包，但依赖当前项目目录存在。
-
-### 方式二：打包成 `.vsix` 后安装
-
-如果你想让它脱离当前项目目录独立安装，推荐打包成 `.vsix`。
-
-常见步骤如下：
-
-1. 全局安装打包工具
+### 打包与发布准备
 
 ```powershell
-npm install -g @vscode/vsce
+cmd /c npm run package:vsix
+cmd /c npm run install:vsix
 ```
 
-2. 在项目目录执行打包
+这会生成并安装一个与 `package.json` 版本号对应的文件，例如：
+
+- `artifacts/fictionsky-wordpress-publisher-1.0.0.vsix`
+
+### 以后怎么更新插件
+
+1. 修改源码。
+2. 更新 `package.json` 中的 `version`。
+3. 在 `CHANGELOG.md` 里补上新版本记录。
+4. 运行 `cmd /c npm test`。
+5. 运行 `cmd /c npm run package:vsix` 生成新的 `.vsix`。
+6. 运行 `cmd /c npm run install:vsix` 覆盖安装本机扩展。
+7. 把源码和新的 `artifacts/*.vsix` 一起提交并推送到 GitHub。
+
+### GitHub
+
+项目准备推送到：
+
+- `https://github.com/FictionSky/VS_plus_wordpress`
+
+建议在本地验证测试、打包和安装都通过后，再提交并推送到 GitHub。
+
+## English
+
+### Overview
+
+- Publish the active Markdown document to WordPress as a draft
+- Publish the active Markdown document directly
+- Configure one or more WordPress sites in VS Code settings
+- Store per-site app passwords in VS Code Secret Storage
+- Reuse the repository's Markdown-to-WordPress block conversion logic
+- Keep compatibility with legacy `wordpress-post.*` settings
+
+### Commands
+
+- `WordPress: Publish Current Markdown as Draft`
+- `WordPress: Publish Current Markdown Now`
+- `WordPress: Save Site App Password`
+- `WordPress: Clear Saved Site App Password`
+
+### Installation
+
+#### Option 1: Package a local VSIX
 
 ```powershell
-vsce package
+cmd /c npm install
+cmd /c npm run package:vsix
+cmd /c npm run install:vsix
 ```
 
-执行后会生成一个类似下面的文件：
+#### Option 2: Run in development mode
 
-```text
-fictionsky-wordpress-publisher-1.0.0.vsix
+1. Open this project in VS Code.
+2. Press `F5` to launch an `Extension Development Host`.
+3. Open a Markdown file in the new window.
+4. Run any `WordPress:` command from the command palette.
+
+### Configuration
+
+Recommended `settings.json` configuration:
+
+```json
+{
+  "wordpressPublisher.sites": [
+    {
+      "id": "main",
+      "label": "Main Site",
+      "baseUrl": "https://example.com",
+      "apiUrl": "https://example.com/wp-json/wp/v2",
+      "username": "your-wordpress-user"
+    }
+  ],
+  "wordpressPublisher.defaultSiteId": "main",
+  "wordpressPublisher.frontmatterSiteKey": "wordpress_site"
+}
 ```
 
-3. 在 VS Code 中安装 `.vsix`
+Field notes:
 
-方式 A：
+- `id`: unique site identifier
+- `label`: display label shown in pickers
+- `baseUrl`: optional site home URL
+- `apiUrl`: WordPress REST API URL, usually ending in `/wp-json/wp/v2`
+- `username`: WordPress username
+- `defaultSiteId`: fallback site when the document does not declare one
+- `frontmatterSiteKey`: preferred frontmatter key for site selection
 
-- 打开 VS Code
-- 进入“扩展”
-- 点击右上角 `...`
-- 选择 `Install from VSIX...`
-- 选择刚才生成的 `.vsix` 文件
+Legacy settings are still supported:
 
-方式 B：
+```json
+{
+  "wordpress-post.siteUrl": "https://example.com",
+  "wordpress-post.apiUrl": "https://example.com/wp-json/wp/v2",
+  "wordpress-post.authUser": "your-wordpress-user",
+  "wordpress-post.authPassword": "your app password"
+}
+```
+
+### Markdown Requirements
+
+Each Markdown document should start with frontmatter similar to:
+
+```yaml
+---
+title: Article Title
+slug: article-slug
+status: draft
+wordpress_site: main
+---
+```
+
+Common optional fields:
+
+- `excerpt`
+- `categories`
+- `tags`
+
+Notes:
+
+- `title` and `slug` are required
+- supported `status` values are `draft`, `publish`, `pending`, `private`, and `future`
+- `categories` and `tags` should typically use existing WordPress slugs
+- site selection also accepts `wordpress_target`, `wp_site`, and `site`
+
+### Usage
+
+1. Open a Markdown file.
+2. Run `WordPress: Save Site App Password` the first time to store the app password.
+3. Run either `WordPress: Publish Current Markdown as Draft` or `WordPress: Publish Current Markdown Now`.
+4. The extension resolves the target site from frontmatter, the default site, or a picker.
+
+Sample content is included here:
+
+- [wordpress-extension-test.md](./wordpress-extension-test.md)
+
+### Development and Testing
 
 ```powershell
-code --install-extension .\fictionsky-wordpress-publisher-1.0.0.vsix
+cmd /c npm test
 ```
 
-安装成 `.vsix` 之后，就不再依赖当前 `Post1` 目录。
-
-## 6. 怎么发布到 GitHub
-
-当前仓库已经存在 GitHub 远端：
-
-```text
-https://github.com/FictionSky/VS_plus_wordpress.git
-```
-
-标准流程如下：
-
-1. 查看状态
+To run the shared CLI directly:
 
 ```powershell
-git status
+node .\scripts\publish-wp-blocks.mjs .\wordpress-extension-test.md
 ```
 
-2. 添加文件
+The CLI looks for:
+
+- `WP_BASE_URL`
+- `WP_API_URL`
+- `WP_USER`
+- `WP_APP_PASSWORD`
+
+If those variables are missing, it falls back to legacy `wordpress-post.*` settings from local VS Code configuration.
+
+### Packaging
 
 ```powershell
-git add .
+cmd /c npm run package:vsix
+cmd /c npm run install:vsix
 ```
 
-3. 提交
+These commands generate and install a versioned artifact based on `package.json`, for example:
 
-```powershell
-git commit -m "feat: add VS Code WordPress publisher extension"
-```
+- `artifacts/fictionsky-wordpress-publisher-1.0.0.vsix`
 
-4. 推送到 GitHub
+### Updating the Plugin Later
 
-```powershell
-git push VS_plus_wordpress main
-```
+1. Update the source code.
+2. Bump the `version` field in `package.json`.
+3. Add a new entry in `CHANGELOG.md`.
+4. Run `cmd /c npm test`.
+5. Run `cmd /c npm run package:vsix` to generate the new VSIX.
+6. Run `cmd /c npm run install:vsix` to reinstall the updated extension locally.
+7. Commit both the source changes and the new `artifacts/*.vsix`, then push them to GitHub.
 
-如果你希望，我也可以直接帮你完成这一步。
+### GitHub
 
-## 7. 当前项目结构
+This project is being prepared for:
 
-关键文件如下：
+- `https://github.com/FictionSky/VS_plus_wordpress`
 
-- [extension/extension.cjs](./extension/extension.cjs)：VS Code 扩展入口
-- [scripts/wp-publish-core.mjs](./scripts/wp-publish-core.mjs)：共享发布核心
-- [scripts/wp-vscode-sites.mjs](./scripts/wp-vscode-sites.mjs)：站点配置辅助逻辑
-- [scripts/wp-blocks.mjs](./scripts/wp-blocks.mjs)：Markdown 转 WordPress 区块
-- [scripts/publish-wp-blocks.mjs](./scripts/publish-wp-blocks.mjs)：CLI 入口
-- [wordpress-extension-test.md](./wordpress-extension-test.md)：测试文章
-
-## 8. 当前验证状态
-
-目前已完成本地自动验证：
-
-```powershell
-node --test tests/*.test.mjs
-node --check .\extension\extension.cjs
-node --check .\scripts\publish-wp-blocks.mjs
-```
-
-你已经实际验证过：
-
-- 扩展命令可以显示
-- 扩展可以读取配置
-- 扩展可以成功发布到 WordPress
+Run tests, package the extension, and verify local installation before pushing the repository.
