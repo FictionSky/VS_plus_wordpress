@@ -1,8 +1,121 @@
 {
   "name": "fictionsky-wordpress-publisher",
+  "displayName": "WordPress Publisher",
+  "description": "Publish the current Markdown document to WordPress from VS Code.",
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "main": "./extension/extension.cjs",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:wordpressPublisher.publishDraft",
+    "onCommand:wordpressPublisher.publishNow",
+    "onCommand:wordpressPublisher.setSitePassword",
+    "onCommand:wordpressPublisher.clearSitePassword"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "wordpressPublisher.publishDraft",
+        "title": "WordPress: Publish Current Markdown as Draft"
+      },
+      {
+        "command": "wordpressPublisher.publishNow",
+        "title": "WordPress: Publish Current Markdown Now"
+      },
+      {
+        "command": "wordpressPublisher.setSitePassword",
+        "title": "WordPress: Save Site App Password"
+      },
+      {
+        "command": "wordpressPublisher.clearSitePassword",
+        "title": "WordPress: Clear Saved Site App Password"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "wordpressPublisher.publishDraft",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        },
+        {
+          "command": "wordpressPublisher.publishNow",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "wordpressPublisher.publishDraft"
+        },
+        {
+          "command": "wordpressPublisher.publishNow"
+        },
+        {
+          "command": "wordpressPublisher.setSitePassword"
+        },
+        {
+          "command": "wordpressPublisher.clearSitePassword"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "WordPress Publisher",
+      "properties": {
+        "wordpressPublisher.sites": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "Configured WordPress sites for the publisher extension.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "apiUrl",
+              "username"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique site identifier used in frontmatter and secret storage."
+              },
+              "label": {
+                "type": "string",
+                "description": "Display label shown when choosing a site."
+              },
+              "baseUrl": {
+                "type": "string",
+                "description": "Optional site base URL."
+              },
+              "apiUrl": {
+                "type": "string",
+                "description": "WordPress REST API base URL, usually ending with /wp-json/wp/v2."
+              },
+              "username": {
+                "type": "string",
+                "description": "WordPress username used with the app password."
+              }
+            }
+          }
+        },
+        "wordpressPublisher.defaultSiteId": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Default site id used when the current Markdown file does not specify one."
+        },
+        "wordpressPublisher.frontmatterSiteKey": {
+          "type": "string",
+          "default": "wordpress_site",
+          "markdownDescription": "Frontmatter field name used to select a configured site."
+        }
+      }
+    }
+  },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "publish:wp": "node scripts/publish-wp-blocks.mjs"

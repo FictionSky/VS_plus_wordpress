@@ -1,0 +1,3 @@
+debug.log
+*.vsix
+node_modules/
