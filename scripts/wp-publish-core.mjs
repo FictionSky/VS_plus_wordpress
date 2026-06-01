@@ -1,9 +1,11 @@
 import { buildPostLookupUrl, buildPostMutationUrl } from "./wp-api-url.mjs";
 import { parseWpJsonResponse } from "./wp-api-response.mjs";
 import { buildPostPayload } from "./wp-blocks.mjs";
+import { uploadLocalMarkdownImages } from "./wp-media.mjs";
 
 export async function publishMarkdownToWordPress({
   markdown,
+  markdownPath = "",
   config,
   statusOverride = "",
   fetchImpl = globalThis.fetch,
@@ -17,7 +19,13 @@ export async function publishMarkdownToWordPress({
   }
 
   const normalizedConfig = normalizeConfig(config);
-  const { frontmatter, content } = buildPostPayload(markdown);
+  const imageResult = await uploadLocalMarkdownImages({
+    markdown,
+    markdownPath,
+    config: normalizedConfig,
+    fetchImpl,
+  });
+  const { frontmatter, content } = buildPostPayload(imageResult.markdown);
 
   validateFrontmatter(frontmatter);
 
@@ -56,6 +64,7 @@ export async function publishMarkdownToWordPress({
   return {
     frontmatter,
     content,
+    uploadedImages: imageResult.uploads,
     existing,
     post,
     endpoint: endpoint.toString(),

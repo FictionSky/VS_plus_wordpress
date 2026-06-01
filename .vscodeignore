@@ -15,3 +15,8 @@ debug.log
 fictionsky-writing-guide-published.md
 vscode-wordpress-test.md
 wordpress-extension-test.md
+*.gif
+*.jpeg
+*.jpg
+*.png
+*.webp

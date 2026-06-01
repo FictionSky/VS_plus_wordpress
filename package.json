@@ -2,7 +2,7 @@
   "name": "fictionsky-wordpress-publisher",
   "displayName": "WordPress Publisher",
   "description": "Publish the current Markdown document to WordPress from VS Code.",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "publisher": "fictionsky",
   "license": "MIT",
   "type": "module",
@@ -55,18 +55,6 @@
       }
     ],
     "menus": {
-      "editor/title": [
-        {
-          "command": "wordpressPublisher.publishDraft",
-          "when": "resourceLangId == markdown",
-          "group": "navigation"
-        },
-        {
-          "command": "wordpressPublisher.publishNow",
-          "when": "resourceLangId == markdown",
-          "group": "navigation"
-        }
-      ],
       "commandPalette": [
         {
           "command": "wordpressPublisher.publishDraft"

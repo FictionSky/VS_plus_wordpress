@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { publishMarkdownToWordPress } from "../scripts/wp-publish-core.mjs";
 
@@ -117,3 +120,56 @@ Paragraph`,
   assert.equal(body.tags[0], 8);
   assert.match(result.content, /<!-- wp:paragraph -->/);
 });
+
+test("uploads local images before publishing post content", async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "wp-publish-images-"));
+  await fs.writeFile(path.join(tempDir, "cover.jpg"), Buffer.from([0xff, 0xd8, 0xff]));
+
+  const calls = [];
+  const result = await publishMarkdownToWordPress({
+    markdown: `---
+title: Image Post
+slug: image-post
+---
+
+![Cover](./cover.jpg)`,
+    markdownPath: path.join(tempDir, "post.md"),
+    config: {
+      apiUrl: "https://example.com/wp-json/wp/v2",
+      user: "editor",
+      password: "app-password",
+    },
+    fetchImpl: async (url, options = {}) => {
+      calls.push({ url: url.toString(), options });
+
+      if (url.toString().includes("/posts?")) {
+        return jsonResponse([]);
+      }
+
+      if (url.toString().endsWith("/media")) {
+        return jsonResponse({
+          id: 55,
+          source_url: "https://example.com/wp-content/uploads/cover.jpg",
+        });
+      }
+
+      const body = JSON.parse(options.body);
+      assert.match(body.content, /<img src="https:\/\/example\.com\/wp-content\/uploads\/cover\.jpg" alt="Cover">/);
+      return jsonResponse({ id: 77, slug: "image-post", status: "draft", link: "https://example.com/image-post" });
+    },
+  });
+
+  assert.equal(calls.some((call) => call.url.endsWith("/media")), true);
+  assert.match(result.content, /https:\/\/example\.com\/wp-content\/uploads\/cover\.jpg/);
+});
+
+function jsonResponse(data, ok = true, status = 200) {
+  return {
+    ok,
+    status,
+    statusText: ok ? "OK" : "Bad Request",
+    async text() {
+      return JSON.stringify(data);
+    },
+  };
+}

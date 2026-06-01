@@ -17,6 +17,7 @@ const config = await loadConfig();
 try {
   const result = await publishMarkdownToWordPress({
     markdown,
+    markdownPath,
     config,
   });
 

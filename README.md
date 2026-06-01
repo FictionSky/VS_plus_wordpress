@@ -106,6 +106,93 @@ wordpress_site: main
 - `categories` 与 `tags` 建议使用 WordPress 中已经存在的 slug
 - frontmatter 选站字段除了 `wordpress_site` 之外，也兼容 `wordpress_target`、`wp_site`、`site`
 
+### Markdown 写作说明
+
+每篇文章开头至少需要包含 `title` 和 `slug`，通常也会写上 `status` 和 `wordpress_site`：
+
+```yaml
+---
+title: 文章标题
+slug: article-slug
+status: draft
+wordpress_site: main
+---
+```
+
+完整文章示例：
+
+````markdown
+---
+title: 文章标题
+slug: article-slug
+status: draft
+excerpt: 这是一段文章摘要。
+categories:
+  - writing
+tags: [vscode, wordpress]
+wordpress_site: main
+---
+
+render{
+## 正文小节
+
+这里会按 Markdown 解析，并转换成 WordPress 区块。
+
+- 支持列表
+- 支持 **加粗**、*斜体*、`行内代码` 和链接
+
+![封面图](./images/cover.png)
+}
+
+math{
+E = mc^2
+}
+
+code js{
+console.log("这里会变成 WordPress 代码区块。");
+}
+
+html{
+<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+}
+
+shortcode{
+[gallery ids="1,2,3"]
+}
+
+也可以在辅助块外面直接写普通 Markdown 段落。
+````
+
+常用 frontmatter 字段：
+
+- `title`：文章标题，必填
+- `slug`：文章固定链接 slug，必填
+- `status`：发布状态，可用 `draft`、`publish`、`pending`、`private`、`future`
+- `excerpt`：文章摘要
+- `categories`：分类 slug，建议使用 WordPress 中已经存在的分类
+- `tags`：标签 slug，建议使用 WordPress 中已经存在的标签
+- `wordpress_site`：目标站点 id；也兼容 `wordpress_target`、`wp_site`、`site`
+
+本地图片可以直接写 Markdown 图片语法，例如 `![封面图](./images/cover.png)`。发布时扩展会先上传到 WordPress 媒体库，再把文章里的地址替换成媒体库 URL。远程图片 URL 会保持不变。
+
+支持的本地图片扩展名包括 `.png`、`.jpg`、`.jpeg`、`.gif`、`.webp` 和 `.svg`。相对路径会以当前 Markdown 文件所在目录为基准解析。中文或其它非 ASCII 图片文件名上传时会使用 `image-<hash>` 这种安全文件名，避免不同图片都叫 `image.png`。
+
+### Markdown 辅助块
+
+扩展支持一些类似函数的辅助块，用来明确告诉发布器“这一段应该变成什么类型的 WordPress 内容”：
+
+- `render{ ... }`：把里面的内容按 Markdown 解析，转换成普通 WordPress 区块。大多数正文内容都可以放在这里。
+- `math{ ... }`：把里面的内容转换成 KaTeX 显示公式短代码：`[katex display=true]...[/katex]`。
+- `code js{ ... }`：转换成 WordPress 原生代码区块。`js` 可以换成 `python`、`text`、`html` 等语言名。
+- `html{ ... }`：转换成 WordPress 自定义 HTML 区块，适合放可信任的 HTML 片段。
+- `shortcode{ ... }`：转换成 WordPress 短代码区块，不会把短代码转义。
+- 普通 fenced code block，例如 ```` ```js ````，也会转换成 WordPress 原生代码区块。
+- ````wp-render```` fenced block 的效果类似 `render{ ... }`，适合内容里本身需要写花括号或嵌套代码块的情况。
+- `$$ ... $$` 会转换成显示公式。
+- `$...$` 或 `\(...\)` 会转换成行内 KaTeX 公式。
+
+日常写文章时，建议正文主要用普通 Markdown 或 `render{ ... }`；只有在需要公式、代码、HTML 或短代码时，再使用对应辅助块。
+
 ### 使用流程
 
 1. 打开一个 Markdown 文件。
@@ -147,7 +234,7 @@ cmd /c npm run install:vsix
 
 这会生成并安装一个与 `package.json` 版本号对应的文件，例如：
 
-- `artifacts/fictionsky-wordpress-publisher-1.0.0.vsix`
+- `artifacts/fictionsky-wordpress-publisher-2.0.0.vsix`
 
 ### 以后怎么更新插件
 
@@ -256,6 +343,50 @@ wordpress_site: main
 ---
 ```
 
+Full article example:
+
+````markdown
+---
+title: Article Title
+slug: article-slug
+status: draft
+excerpt: Short summary shown by WordPress themes and feeds.
+categories:
+  - writing
+tags: [vscode, wordpress]
+wordpress_site: main
+---
+
+render{
+## Section Rendered as Markdown
+
+This block is parsed as normal Markdown and converted into WordPress blocks.
+
+- Lists are supported
+- **Bold**, *italic*, `code`, and links are supported
+
+![Cover image](./images/cover.png)
+}
+
+math{
+E = mc^2
+}
+
+code js{
+console.log("This becomes a native WordPress code block.");
+}
+
+html{
+<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+}
+
+shortcode{
+[gallery ids="1,2,3"]
+}
+
+You can also write regular Markdown paragraphs outside helper blocks.
+````
+
 Common optional fields:
 
 - `excerpt`
@@ -268,6 +399,28 @@ Notes:
 - supported `status` values are `draft`, `publish`, `pending`, `private`, and `future`
 - `categories` and `tags` should typically use existing WordPress slugs
 - site selection also accepts `wordpress_target`, `wp_site`, and `site`
+- local Markdown images such as `![Cover](./images/cover.png)` are uploaded to the WordPress media library before the post is published
+- remote image URLs such as `![Cover](https://example.com/cover.png)` are left unchanged
+
+Supported local image extensions are `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, and `.svg`. Relative image paths are resolved from the Markdown file's directory. If a local image is missing or WordPress rejects the media upload, publishing stops before the post content is created or updated.
+
+For non-ASCII local filenames, the uploaded media filename uses an ASCII-safe `image-<hash>` name so different images do not all upload as `image.png`.
+
+### Markdown Helper Blocks
+
+The extension supports a few helper blocks for content that should be converted in a specific way:
+
+- `render{ ... }`: Parses the inside as Markdown and renders it as normal WordPress blocks. Use this when you want headings, paragraphs, lists, images, links, and inline formatting to behave like regular Markdown inside a grouped block.
+- `math{ ... }`: Wraps the inside as a display KaTeX shortcode: `[katex display=true]...[/katex]`.
+- `code js{ ... }`: Creates a native WordPress code block. Replace `js` with the language name you want, such as `python`, `text`, or `html`.
+- `html{ ... }`: Creates a WordPress custom HTML block. Use this for trusted raw HTML snippets.
+- `shortcode{ ... }`: Creates a WordPress shortcode block without escaping the shortcode.
+- Fenced code blocks such as ```` ```js ```` also become native WordPress code blocks.
+- Fenced ````wp-render```` blocks behave like `render{ ... }` and are useful when nested fences make brace syntax awkward.
+- Display math can also be written with `$$ ... $$`.
+- Inline math can be written as `$E = mc^2$` or `\(E = mc^2\)`.
+
+Use `render{ ... }` for most article content when you want a clear section wrapper, and use the other helper blocks only when you need a specific WordPress block type.
 
 ### Usage
 
@@ -275,6 +428,8 @@ Notes:
 2. Run `WordPress: Save Site App Password` the first time to store the app password.
 3. Run either `WordPress: Publish Current Markdown as Draft` or `WordPress: Publish Current Markdown Now`.
 4. The extension resolves the target site from frontmatter, the default site, or a picker.
+
+Publish commands are available from the command palette and are intentionally not shown in the editor title toolbar.
 
 Sample content is included here:
 
@@ -301,6 +456,17 @@ The CLI looks for:
 
 If those variables are missing, it falls back to legacy `wordpress-post.*` settings from local VS Code configuration.
 
+### Future Plans
+
+- Upload and render local video files such as `.mp4` as WordPress video blocks.
+- Add an explicit media block syntax for assets that are not Markdown images, for example `video{ ./demo.mp4 }`.
+- Reuse previously uploaded media when the same local file is published again.
+- Support a frontmatter field for featured images, such as `featured_image: ./cover.png`.
+- Show a publish preview that lists the target site, post status, local media to upload, and final slug before sending data to WordPress.
+- Add optional image optimization or size checks before upload.
+- Support alt text, captions, and alignment as native WordPress image block attributes.
+- Improve README encoding and rewrite the Chinese documentation cleanly in UTF-8.
+
 ### Packaging
 
 ```powershell
@@ -310,7 +476,7 @@ cmd /c npm run install:vsix
 
 These commands generate and install a versioned artifact based on `package.json`, for example:
 
-- `artifacts/fictionsky-wordpress-publisher-1.0.0.vsix`
+- `artifacts/fictionsky-wordpress-publisher-2.0.0.vsix`
 
 ### Updating the Plugin Later
 

@@ -21,6 +21,22 @@ test("publish commands are always available from the command palette", async () 
   assert.ok(!("when" in publishNow), "publish now command should not depend on editorTextFocus");
 });
 
+test("publish commands do not occupy editor title space", async () => {
+  const manifest = await readManifest();
+  const editorTitleEntries = manifest.contributes?.menus?.["editor/title"] || [];
+
+  assert.equal(
+    editorTitleEntries.some((item) => item.command === "wordpressPublisher.publishDraft"),
+    false,
+    "publish draft should stay out of the editor title toolbar",
+  );
+  assert.equal(
+    editorTitleEntries.some((item) => item.command === "wordpressPublisher.publishNow"),
+    false,
+    "publish now should stay out of the editor title toolbar",
+  );
+});
+
 test("manifest is ready for public distribution", async () => {
   const manifest = await readManifest();
 

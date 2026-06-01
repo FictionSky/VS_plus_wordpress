@@ -36,4 +36,6 @@ test("release assets exist and are not excluded from packaging", async () => {
   assert.ok(!ignoreFile.includes("LICENSE"), "LICENSE must be packaged");
   assert.ok(!ignoreFile.includes("media/"), "media assets must be packaged");
   assert.ok(ignoreFile.includes(".npm-cache/"), "npm cache must be excluded from packaging");
+  assert.ok(ignoreFile.includes("*.png"), "loose root PNG test images must be excluded from packaging");
+  assert.ok(ignoreFile.includes("*.jpg"), "loose root JPG test images must be excluded from packaging");
 });

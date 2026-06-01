@@ -47,6 +47,7 @@ async function publishCurrentDocument(context, statusOverride) {
       async () =>
         modules.publishMarkdownToWordPress({
           markdown,
+          markdownPath: document.uri.fsPath,
           config: {
             baseUrl: site.baseUrl,
             apiUrl: site.apiUrl,
