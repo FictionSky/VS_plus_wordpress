@@ -204,6 +204,7 @@ code json{
 - `html{}` 会变成自定义 HTML 区块。
 - `math{}` 和 `$$...$$` 会变成 `[katex display=true]...[/katex]`。
 - `code js{}` 和普通围栏代码块会变成 WordPress 原生代码区块。
+- 本地 Markdown 图片会先上传到 WordPress 媒体库，再替换成媒体库 URL。
 - 旧的 ` ```wp-render ` 语法仍然兼容。
 
 也正因为如此，这份文档后面推荐的 `render{}`、`shortcode{}`、`code ...{}`、`html{}`、`math{}` 才适合当前站点。
@@ -215,6 +216,9 @@ code json{
 - `render{}`、`shortcode{}`、`html{}`、`math{}`、`code ...{}` 的开始行和结束行都必须独立成行。
 - 这套简写不支持嵌套；复杂嵌套结构继续使用旧围栏最稳。
 - 如果代码内容里本身会出现“单独一行的 `}`”，请改用普通围栏代码块。
+- 本地图片路径会以当前 Markdown 文件所在目录为基准解析。
+- 支持上传的本地图片格式包括 `.png`、`.jpg`、`.jpeg`、`.gif`、`.webp` 和 `.svg`。
+- 中文或其它非 ASCII 图片文件名上传时会使用 `image-<hash>` 形式的安全文件名，避免多张图片都叫 `image.png`。
 - 分类和标签不会自动创建，只会按 slug 去查现有数据。
 - 当前只处理文章 `posts`，不是页面 `pages`。
 - 当前没有上传特色图、没有设置 `featured_media`、没有设置自定义字段、没有设置发布时间 `date`。
@@ -299,7 +303,19 @@ render{
 [FictionSky](https://fictionsky.top)
 
 ![图片说明](https://example.com/image.png)
+
+![本地图片示例](./test.png)
+
+![中文文件名图片示例](./图片上传测试.png)
 }
+
+上面三种图片写法含义不同：
+
+- `https://example.com/image.png` 是远程图片，发布时会保持原 URL。
+- `./test.png` 是本地图片，发布时会先上传到 WordPress 媒体库，再替换成上传后的 URL。
+- `./图片上传测试.png` 也是本地图片；如果文件名包含中文，上传到媒体库时会自动改成类似 `image-1a2b3c4d.png` 的安全文件名。
+
+本地图片路径以当前 Markdown 文件所在目录为基准。例如文章文件在 `posts/demo.md`，图片写成 `./images/cover.png`，实际读取的是 `posts/images/cover.png`。
 
 ### 表格
 
